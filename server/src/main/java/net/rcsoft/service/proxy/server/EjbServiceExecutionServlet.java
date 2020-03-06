@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,6 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceMehodParamDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceRequestDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceResponseDTO;
+import net.rcsoft.service.proxy.server.provider.InitialContextServiceProvider;
+import net.rcsoft.service.proxy.server.provider.ServiceProvider;
 
 /**
  * HttpServlet to execute local services registered in JNDI.
@@ -28,13 +29,30 @@ public class EjbServiceExecutionServlet extends HttpServlet {
     
     private static final String JDNI_PREFIX = "jndi.prefix";
     
+    private static final String SERVICE_PROVIDER_CLASS = "service.provider.class";
+    
     private String jndiPrefix;
+    
+    private ServiceProvider serviceProvider;
 
     @Override
     public void init() throws ServletException {
         super.init();
         
         this.jndiPrefix = this.getServletContext().getInitParameter(JDNI_PREFIX);
+        this.serviceProvider = new InitialContextServiceProvider(this.jndiPrefix);
+        
+        final String providerFqn = this.getServletContext().getInitParameter(SERVICE_PROVIDER_CLASS);
+        
+        if (providerFqn != null && !providerFqn.trim().isEmpty()) {
+            try {
+                Class<? extends ServiceProvider> serviceClass =  (Class<? extends ServiceProvider>) Class.forName(providerFqn);
+                
+                this.serviceProvider = serviceClass.newInstance();
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                Logger.getLogger(EjbServiceExecutionServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     @Override
@@ -51,7 +69,7 @@ public class EjbServiceExecutionServlet extends HttpServlet {
                 paramData.add(param.getParamData());
             });
             final Method method = this.getMethod(serviceClass, request.getMethod(), paramTypes.toArray(new Class<?>[paramTypes.size()]));
-            final Object serviceInstance = this.getServiceInstance(serviceClass);
+            final Object serviceInstance = this.serviceProvider.getServiceInstance(serviceClass);
             final Object result = method.invoke(serviceInstance, paramData.toArray(new Object[paramTypes.size()]));
             final ProxyServiceResponseDTO response = new ProxyServiceResponseDTO();
             
@@ -71,21 +89,13 @@ public class EjbServiceExecutionServlet extends HttpServlet {
             resp.setContentType("text/plain");
             resp.getWriter().append(ex.getLocalizedMessage());
             resp.getWriter().close();
+        } catch (Exception ex) {
+            Logger.getLogger(EjbServiceExecutionServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-    
-    private String getJndiName(final Class<?> serviceClass) {
-        return this.jndiPrefix.concat("/").concat(serviceClass.getSimpleName());
     }
     
     private Method getMethod(final Class<?> serviceClass, final String methodName, final Class<?> ... paramTypes) throws NoSuchMethodException {
         return serviceClass.getDeclaredMethod(methodName, paramTypes);
-    }
-    
-    private <T> T getServiceInstance(final Class<T> type) throws NamingException {
-        InitialContext context = new InitialContext();
-        
-        return (T) context.lookup(this.getJndiName(type));
     }
     
     private static class MethodParam {
