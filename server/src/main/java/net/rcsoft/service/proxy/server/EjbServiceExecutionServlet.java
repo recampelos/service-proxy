@@ -39,10 +39,10 @@ public class EjbServiceExecutionServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         
-        this.jndiPrefix = this.getServletContext().getInitParameter(JDNI_PREFIX);
+        this.jndiPrefix = this.getServletConfig().getInitParameter(JDNI_PREFIX);
         this.serviceProvider = new InitialContextServiceProvider(this.jndiPrefix);
         
-        final String providerFqn = this.getServletContext().getInitParameter(SERVICE_PROVIDER_CLASS);
+        final String providerFqn = this.getServletConfig().getInitParameter(SERVICE_PROVIDER_CLASS);
         
         if (providerFqn != null && !providerFqn.trim().isEmpty()) {
             try {
@@ -60,6 +60,7 @@ public class EjbServiceExecutionServlet extends HttpServlet {
         try {
             final ProxyServiceRequestDTO request = new Gson().fromJson(req.getReader(), ProxyServiceRequestDTO.class);
             final Class<?> serviceClass = Class.forName(request.getServiceClass());
+            final Object serviceInstance = this.serviceProvider.getServiceInstance(serviceClass);
             final List<MethodParam> methodParams = MethodParam.fromProxyServiceMehodParamDTOList(request.getParams());
             Collections.sort(methodParams, (MethodParam o1, MethodParam o2) -> o1.getIndex().compareTo(o2.getIndex()));
             final List<Class<?>> paramTypes = new ArrayList<>();
@@ -68,8 +69,9 @@ public class EjbServiceExecutionServlet extends HttpServlet {
                 paramTypes.add(param.getClass());
                 paramData.add(param.getParamData());
             });
-            final Method method = this.getMethod(serviceClass, request.getMethod(), paramTypes.toArray(new Class<?>[paramTypes.size()]));
-            final Object serviceInstance = this.serviceProvider.getServiceInstance(serviceClass);
+            final Method method = this.getMethod(serviceInstance.getClass(), request.getMethod(), paramTypes.toArray(new Class<
+                    ?>[paramTypes.size()]));
+
             final Object result = method.invoke(serviceInstance, paramData.toArray(new Object[paramTypes.size()]));
             final ProxyServiceResponseDTO response = new ProxyServiceResponseDTO();
             
@@ -91,6 +93,11 @@ public class EjbServiceExecutionServlet extends HttpServlet {
             resp.getWriter().close();
         } catch (Exception ex) {
             Logger.getLogger(EjbServiceExecutionServlet.class.getName()).log(Level.SEVERE, null, ex);
+
+            resp.setStatus(500);
+            resp.setContentType("text/plain");
+            resp.getWriter().append(ex.getLocalizedMessage());
+            resp.getWriter().close();
         }
     }
     

@@ -1,7 +1,7 @@
 package net.rcsoft.service.proxy.client.handler;
 
 import com.google.gson.Gson;
-import java.lang.reflect.InvocationHandler;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import net.rcsoft.service.proxy.client.configuration.ConfigurationKeys;
@@ -17,15 +17,12 @@ import net.rcsoft.service.proxy.data.dto.ProxyServiceResponseDTO;
  * 
  * @author recampelos
  */
-public class HttpConnectionHandler implements InvocationHandler {
+public class HttpConnectionInvocationHandler extends AbstractServiceInvocationHandler {
     
     private final Class<?> serviceClass;
-    
-    private final ConfigurationProvider configurationProvider;
 
-    public HttpConnectionHandler(final Class<?> serviceClass, final ConfigurationProvider configurationProvider) {
+    public HttpConnectionInvocationHandler(final Class<?> serviceClass) {
         this.serviceClass = serviceClass;
-        this.configurationProvider = configurationProvider;
     }
 
     @Override
@@ -48,13 +45,22 @@ public class HttpConnectionHandler implements InvocationHandler {
             }
         }
         
-        final String serverUrl = this.configurationProvider.getConfigurationValue(ConfigurationKeys.SERVICE_HOST_URL);
-        final String serverUsername = this.configurationProvider.getConfigurationValue(ConfigurationKeys.SERVICE_HOST_USERNAME);
-        final String serverPassword = this.configurationProvider.getConfigurationValue(ConfigurationKeys.SERVICE_HOST_PASSWORD);
+        final String serverUrl = this.getConfigurationProvider().getConfigurationValue(ConfigurationKeys.SERVICE_HOST_URL);
+        final String serverUsername = this.getConfigurationProvider().getConfigurationValue(ConfigurationKeys.SERVICE_HOST_USERNAME);
+        final String serverPassword = this.getConfigurationProvider().getConfigurationValue(ConfigurationKeys.SERVICE_HOST_PASSWORD);
+        final String serverConnectionTimeoutConf =
+                this.getConfigurationProvider().getConfigurationValue(ConfigurationKeys.SERVICE_HOST_CONNECTION_TIMEOUT);
+        final String serverReadTimeoutConf =
+                this.getConfigurationProvider().getConfigurationValue(ConfigurationKeys.SERVICE_HOST_READ_TIMEOUT);
+
+        final int serverReadTimeout = Integer.parseInt(serverReadTimeoutConf);
+        final int serverConnectionTimeout = Integer.parseInt(serverConnectionTimeoutConf);
         
         HttpConnectionRestClient.HttpResponse httpResponse = HttpConnectionRestClient.getBuilder(serverUrl)
                 .basicAuth(serverUsername, serverPassword)
                 .body(request, "application/json")
+                .connectionTimeOut(serverConnectionTimeout)
+                .readTimeOut(serverReadTimeout)
                 .post();
         
         if (!httpResponse.isSuccess()) {

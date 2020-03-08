@@ -16,7 +16,13 @@ public enum ConfigurationKeys implements ConfigurationKey {
     SERVICE_HOST_USERNAME("proxy.service.host.username"),
     
     /** Service Host Username. */
-    SERVICE_HOST_PASSWORD("proxy.service.host.password");
+    SERVICE_HOST_PASSWORD("proxy.service.host.password"),
+
+    /** Service Host connection time out. */
+    SERVICE_HOST_CONNECTION_TIMEOUT("proxy.service.host.connection.timeout"),
+
+    /** Service Host read time out. */
+    SERVICE_HOST_READ_TIMEOUT("proxy.service.host.read.timeout");
         
     private final String key;
 
