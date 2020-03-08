@@ -14,7 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import net.rcsoft.service.proxy.data.dto.ProxyServiceMehodParamDTO;
+import net.rcsoft.service.proxy.data.dto.ProxyServiceMethodParamDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceRequestDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceResponseDTO;
 import net.rcsoft.service.proxy.server.provider.InitialContextServiceProvider;
@@ -125,7 +125,7 @@ public class EjbServiceExecutionServlet extends HttpServlet {
             return index;
         }
         
-        public static MethodParam fromProxyServiceMehodParamDTO(final ProxyServiceMehodParamDTO dto) throws ClassNotFoundException {
+        public static MethodParam fromProxyServiceMehodParamDTO(final ProxyServiceMethodParamDTO dto) throws ClassNotFoundException {
             MethodParam methodParam = new MethodParam();
             
             methodParam.index = dto.getIndex();
@@ -135,11 +135,11 @@ public class EjbServiceExecutionServlet extends HttpServlet {
             return methodParam;
         }
         
-        public static List<MethodParam> fromProxyServiceMehodParamDTOList(final List<ProxyServiceMehodParamDTO> dtos) throws ClassNotFoundException {
+        public static List<MethodParam> fromProxyServiceMehodParamDTOList(final List<ProxyServiceMethodParamDTO> dtos) throws ClassNotFoundException {
             List<MethodParam> methodParams = new ArrayList<>();
             
             if (dtos != null && dtos.size() > 0) {
-                for (ProxyServiceMehodParamDTO dto : dtos) {
+                for (ProxyServiceMethodParamDTO dto : dtos) {
                     methodParams.add(fromProxyServiceMehodParamDTO(dto));
                 }
             }

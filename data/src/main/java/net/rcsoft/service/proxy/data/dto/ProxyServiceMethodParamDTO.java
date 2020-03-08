@@ -5,13 +5,15 @@ package net.rcsoft.service.proxy.data.dto;
  *
  * @author recampelos
  */
-public class ProxyServiceMehodParamDTO {
+public class ProxyServiceMethodParamDTO {
     
     private int index;
     
     private String paramClass;
     
     private String paramData;
+
+    private boolean isList;
 
     public int getIndex() {
         return index;
@@ -36,6 +38,12 @@ public class ProxyServiceMehodParamDTO {
     public void setParamData(String paramData) {
         this.paramData = paramData;
     }
-    
-    
+
+    public boolean isList() {
+        return isList;
+    }
+
+    public void setList(boolean list) {
+        isList = list;
+    }
 }

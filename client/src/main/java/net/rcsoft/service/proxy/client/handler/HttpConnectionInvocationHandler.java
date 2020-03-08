@@ -1,16 +1,15 @@
 package net.rcsoft.service.proxy.client.handler;
 
-import com.google.gson.Gson;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import net.rcsoft.service.proxy.client.configuration.ConfigurationKeys;
 import net.rcsoft.service.proxy.client.exception.HttpServiceCallException;
 import net.rcsoft.service.proxy.client.util.HttpConnectionRestClient;
-import net.rcsoft.service.proxy.data.configuration.ConfigurationProvider;
-import net.rcsoft.service.proxy.data.dto.ProxyServiceMehodParamDTO;
+import net.rcsoft.service.proxy.data.dto.ProxyServiceMethodParamDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceRequestDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceResponseDTO;
+import net.rcsoft.service.proxy.data.util.DtoUtil;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 /**
  * HTTP Connection Handler for proxy service.
@@ -35,11 +34,7 @@ public class HttpConnectionInvocationHandler extends AbstractServiceInvocationHa
         
         if (args != null && args.length > 0) {
             for (int i = 0; i < args.length; i++) {
-                ProxyServiceMehodParamDTO param = new ProxyServiceMehodParamDTO();
-                
-                param.setIndex(i);
-                param.setParamClass(args[i].getClass().getName());
-                param.setParamData(new Gson().toJson(args[i]));
+                ProxyServiceMethodParamDTO param = DtoUtil.toProxyServiceMethodParamDTO(args[i], i);
                 
                 request.getParams().add(param);
             }
@@ -71,6 +66,6 @@ public class HttpConnectionInvocationHandler extends AbstractServiceInvocationHa
         
         Class<?> serviceResponseClass = Class.forName(response.getResponseClass());
         
-        return new Gson().fromJson(response.getData(), serviceResponseClass);
+        return DtoUtil.fromResponseData(serviceResponseClass, response.getData(), response.getIsList());
     }
 }

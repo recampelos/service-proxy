@@ -13,7 +13,7 @@ public class ProxyServiceRequestDTO {
     
     private String method;
     
-    private List<ProxyServiceMehodParamDTO> params;
+    private List<ProxyServiceMethodParamDTO> params;
 
     public String getServiceClass() {
         return serviceClass;
@@ -31,11 +31,11 @@ public class ProxyServiceRequestDTO {
         this.method = method;
     }
 
-    public List<ProxyServiceMehodParamDTO> getParams() {
+    public List<ProxyServiceMethodParamDTO> getParams() {
         return params;
     }
 
-    public void setParams(List<ProxyServiceMehodParamDTO> params) {
+    public void setParams(List<ProxyServiceMethodParamDTO> params) {
         this.params = params;
     }
 }
