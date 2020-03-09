@@ -2,8 +2,11 @@ package net.rcsoft.service.proxy.data.util;
 
 import com.google.gson.Gson;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceMethodParamDTO;
+import net.rcsoft.service.proxy.data.dto.ProxyServiceRequestDTO;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,6 +15,31 @@ import java.util.List;
  * @author recampelos
  */
 public class DtoUtil {
+
+    /**
+     * Transform object to
+     *
+     * @param serviceClass service class
+     * @param method calling method
+     * @param args method arguments
+     * @return {@link ProxyServiceRequestDTO} instance
+     */
+    public static ProxyServiceRequestDTO toProxyServiceRequestDTO(final Class<?> serviceClass, final Method method,
+            final Object[] args) {
+        ProxyServiceRequestDTO requestDTO = new ProxyServiceRequestDTO();
+
+        requestDTO.setServiceClass(serviceClass.getName());
+        requestDTO.setMethod(method.getName());
+        requestDTO.setParams(new ArrayList<>());
+
+        if (args != null && args.length > 0) {
+            for (int i = 0; i < args.length; i++) {
+                requestDTO.getParams().add(toProxyServiceMethodParamDTO(args[i], i));
+            }
+        }
+
+        return requestDTO;
+    }
 
     /**
      * Transform object to

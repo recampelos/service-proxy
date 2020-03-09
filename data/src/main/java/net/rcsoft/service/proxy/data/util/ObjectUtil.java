@@ -14,7 +14,7 @@ public class ObjectUtil {
      * @return true if o is list
      */
     public static boolean isList(final Object o) {
-        return (Collection.class.isAssignableFrom(o.getClass()) || Map.class.isAssignableFrom(o.getClass()));
+        return (Collection.class.isAssignableFrom(o.getClass()) || Map.class.isAssignableFrom(o.getClass()) || o.getClass().isArray());
     }
 
     /**
@@ -41,7 +41,11 @@ public class ObjectUtil {
      * @param list list
      * @return the class of the objects in list
      */
-    public static Class<?> getClassFromList(final List<Class<?>> list) {
+    public static Class<?> getClassFromList(final List<?> list) {
+        if (list == null || list.isEmpty()) {
+            return Object.class;
+        }
+
         return list.get(0).getClass();
     }
 
@@ -51,7 +55,11 @@ public class ObjectUtil {
      * @param list list
      * @return the class name of the objects in list
      */
-    public static String getClassNameFromList(final List<Class<?>> list) {
+    public static String getClassNameFromList(final List<?> list) {
+        if (list == null || list.isEmpty()) {
+            return Object.class.getName();
+        }
+
         return list.get(0).getClass().getName();
     }
 
