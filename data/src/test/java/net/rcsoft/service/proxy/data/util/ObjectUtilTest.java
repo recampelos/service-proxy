@@ -19,8 +19,16 @@ public class ObjectUtilTest {
     public void testIsList() throws Exception {
         Assert.assertTrue(ObjectUtil.isList(new ArrayList<>()));
         Assert.assertTrue(ObjectUtil.isList(new HashSet<>()));
-        Assert.assertTrue(ObjectUtil.isList(new Object[]{}));
-        Assert.assertTrue(ObjectUtil.isList(new HashMap<>()));
+    }
+
+    @Test
+    public void testIsMap() throws Exception {
+        Assert.assertTrue(ObjectUtil.isMap(new HashMap<>()));
+    }
+
+    @Test
+    public void testIsArray() throws Exception {
+        Assert.assertTrue(ObjectUtil.isArray(new Object[]{}));
     }
 
     @Test
@@ -38,7 +46,7 @@ public class ObjectUtilTest {
         List<String> list = new ArrayList<>();
         list.add("data");
 
-        Class<?> listClass = ObjectUtil.getClassFromList(list);
+        Class<?> listClass = ObjectUtil.getClassFromCollection(list);
 
         Assert.assertEquals(listClass, String.class);
     }
@@ -48,13 +56,13 @@ public class ObjectUtilTest {
         List<String> list = new ArrayList<>();
         list.add("data");
 
-        String listClass = ObjectUtil.getClassNameFromList(list);
+        String listClass = ObjectUtil.getClassNameFromCollection(list);
 
         Assert.assertEquals(listClass, String.class.getName());
 
         List<String> list2 = new ArrayList<>();
 
-        String listClass2 = ObjectUtil.getClassNameFromList(list2);
+        String listClass2 = ObjectUtil.getClassNameFromCollection(list2);
 
         Assert.assertEquals(listClass2, Object.class.getName());
     }

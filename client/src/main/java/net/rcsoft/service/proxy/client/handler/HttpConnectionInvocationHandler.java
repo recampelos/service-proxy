@@ -3,13 +3,11 @@ package net.rcsoft.service.proxy.client.handler;
 import net.rcsoft.service.proxy.client.configuration.ConfigurationKeys;
 import net.rcsoft.service.proxy.client.exception.HttpServiceCallException;
 import net.rcsoft.service.proxy.client.util.HttpConnectionRestClient;
-import net.rcsoft.service.proxy.data.dto.ProxyServiceMethodParamDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceRequestDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceResponseDTO;
 import net.rcsoft.service.proxy.data.util.DtoUtil;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 
 /**
  * HTTP Connection Handler for proxy service.
@@ -26,19 +24,7 @@ public class HttpConnectionInvocationHandler extends AbstractServiceInvocationHa
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        ProxyServiceRequestDTO request = new ProxyServiceRequestDTO();
-        
-        request.setServiceClass(serviceClass.getName());
-        request.setMethod(method.getName());
-        request.setParams(new ArrayList<>());
-        
-        if (args != null && args.length > 0) {
-            for (int i = 0; i < args.length; i++) {
-                ProxyServiceMethodParamDTO param = DtoUtil.toProxyServiceMethodParamDTO(args[i], i);
-                
-                request.getParams().add(param);
-            }
-        }
+        ProxyServiceRequestDTO request = DtoUtil.toProxyServiceRequeponsetDTO(this.serviceClass, method, args);
         
         final String serverUrl = this.getConfigurationProvider().getConfigurationValue(ConfigurationKeys.SERVICE_HOST_URL);
         final String serverUsername = this.getConfigurationProvider().getConfigurationValue(ConfigurationKeys.SERVICE_HOST_USERNAME);
@@ -64,8 +50,6 @@ public class HttpConnectionInvocationHandler extends AbstractServiceInvocationHa
         
         ProxyServiceResponseDTO response = httpResponse.getBody(ProxyServiceResponseDTO.class);
         
-        Class<?> serviceResponseClass = Class.forName(response.getResponseClass());
-        
-        return DtoUtil.fromResponseData(serviceResponseClass, response.getData(), response.getIsList());
+       return DtoUtil.fromProxyServiceResponseDTO(response);
     }
 }

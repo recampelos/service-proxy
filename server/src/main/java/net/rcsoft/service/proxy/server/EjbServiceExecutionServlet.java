@@ -14,9 +14,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import net.rcsoft.service.proxy.data.dto.DTODataType;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceMethodParamDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceRequestDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceResponseDTO;
+import net.rcsoft.service.proxy.data.util.DtoUtil;
 import net.rcsoft.service.proxy.server.provider.InitialContextServiceProvider;
 import net.rcsoft.service.proxy.server.provider.ServiceProvider;
 
@@ -73,11 +76,7 @@ public class EjbServiceExecutionServlet extends HttpServlet {
                     ?>[paramTypes.size()]));
 
             final Object result = method.invoke(serviceInstance, paramData.toArray(new Object[paramTypes.size()]));
-            final ProxyServiceResponseDTO response = new ProxyServiceResponseDTO();
-            
-            response.setIsList(Boolean.FALSE);
-            response.setResponseClass(method.getReturnType().getName());
-            response.setData(new Gson().toJson(result, method.getReturnType()));
+            final ProxyServiceResponseDTO response = DtoUtil.toProxyServiceRequeponsetDTO(result);
             
             final String respContent = new Gson().toJson(response, ProxyServiceResponseDTO.class);
             resp.setStatus(200);
@@ -127,10 +126,21 @@ public class EjbServiceExecutionServlet extends HttpServlet {
         
         public static MethodParam fromProxyServiceMehodParamDTO(final ProxyServiceMethodParamDTO dto) throws ClassNotFoundException {
             MethodParam methodParam = new MethodParam();
-            
+            Class<?> valueClass = Class.forName(dto.getValueClass());
             methodParam.index = dto.getIndex();
-            methodParam.paramClass = Class.forName(dto.getParamClass());
-            methodParam.paramData = new Gson().fromJson(dto.getParamData(), methodParam.paramClass);
+
+            if (DTODataType.MAP == dto.getType()) {
+                Class<?> keyClass = Class.forName(dto.getKeyClass());
+
+                methodParam.paramData = DtoUtil.toMap(keyClass, valueClass, dto.getParamData());
+                methodParam.paramClass = methodParam.paramData.getClass();
+            } else if (DTODataType.LIST == dto.getType()) {
+                methodParam.paramData = DtoUtil.toList(valueClass, dto.getParamData());
+                methodParam.paramClass = methodParam.paramData.getClass();
+            } else {
+                methodParam.paramData = DtoUtil.toObject(valueClass, dto.getParamData());
+                methodParam.paramClass = valueClass;
+            }
             
             return methodParam;
         }

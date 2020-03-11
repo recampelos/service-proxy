@@ -25,7 +25,7 @@ public class ServiceProxyClientTest {
         TestService service = ServiceProxyClient.getServiceProxy(TestService.class, new AbstractServiceInvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                ProxyServiceRequestDTO requestDTO = DtoUtil.toProxyServiceRequestDTO(TestService.class, method, args);
+                ProxyServiceRequestDTO requestDTO = DtoUtil.toProxyServiceRequeponsetDTO(TestService.class, method, args);
 
                 Assert.assertNotNull(requestDTO);
                 Assert.assertEquals(requestDTO.getMethod(), method.getName());
@@ -37,8 +37,6 @@ public class ServiceProxyClientTest {
                     for (int i = 0; i < args.length; i++) {
                         Assert.assertEquals(requestDTO.getParams().get(i).getIndex(), i);
                         Assert.assertEquals(requestDTO.getParams().get(i).getParamData(), new Gson().toJson(args[i]));
-                        Assert.assertEquals(requestDTO.getParams().get(i).getParamClass(),
-                                ObjectUtil.getClassNameForObject(args[i]));
                     }
                 } else {
                     Assert.assertEquals(requestDTO.getParams().size(), 0);

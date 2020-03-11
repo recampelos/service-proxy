@@ -6,19 +6,29 @@ package net.rcsoft.service.proxy.data.dto;
  * @author recampelos
  */
 public class ProxyServiceResponseDTO {
-    
-    private String responseClass;
+
+    private String keyClass;
+
+    private String valueClass;
     
     private String data;
-    
-    private Boolean isList;
 
-    public String getResponseClass() {
-        return responseClass;
+    private DTODataType dataType;
+
+    public String getKeyClass() {
+        return keyClass;
     }
 
-    public void setResponseClass(String responseClass) {
-        this.responseClass = responseClass;
+    public void setKeyClass(String keyClass) {
+        this.keyClass = keyClass;
+    }
+
+    public String getValueClass() {
+        return valueClass;
+    }
+
+    public void setValueClass(String valueClass) {
+        this.valueClass = valueClass;
     }
 
     public String getData() {
@@ -29,11 +39,11 @@ public class ProxyServiceResponseDTO {
         this.data = data;
     }
 
-    public Boolean getIsList() {
-        return isList;
+    public DTODataType getDataType() {
+        return dataType;
     }
 
-    public void setIsList(Boolean isList) {
-        this.isList = isList;
+    public void setDataType(DTODataType dataType) {
+        this.dataType = dataType;
     }
 }

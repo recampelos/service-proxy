@@ -9,11 +9,13 @@ public class ProxyServiceMethodParamDTO {
     
     private int index;
     
-    private String paramClass;
-    
     private String paramData;
 
-    private boolean isList;
+    private String keyClass;
+
+    private String valueClass;
+
+    private DTODataType type;
 
     public int getIndex() {
         return index;
@@ -21,14 +23,6 @@ public class ProxyServiceMethodParamDTO {
 
     public void setIndex(int index) {
         this.index = index;
-    }
-
-    public String getParamClass() {
-        return paramClass;
-    }
-
-    public void setParamClass(String paramClass) {
-        this.paramClass = paramClass;
     }
 
     public String getParamData() {
@@ -39,11 +33,27 @@ public class ProxyServiceMethodParamDTO {
         this.paramData = paramData;
     }
 
-    public boolean isList() {
-        return isList;
+    public DTODataType getType() {
+        return type;
     }
 
-    public void setList(boolean list) {
-        isList = list;
+    public void setType(DTODataType type) {
+        this.type = type;
+    }
+
+    public String getKeyClass() {
+        return keyClass;
+    }
+
+    public void setKeyClass(String keyClass) {
+        this.keyClass = keyClass;
+    }
+
+    public String getValueClass() {
+        return valueClass;
+    }
+
+    public void setValueClass(String valueClass) {
+        this.valueClass = valueClass;
     }
 }
