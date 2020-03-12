@@ -15,11 +15,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.rcsoft.service.proxy.data.configuration.ConfigurationProvider;
 import net.rcsoft.service.proxy.data.dto.DTODataType;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceMethodParamDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceRequestDTO;
 import net.rcsoft.service.proxy.data.dto.ProxyServiceResponseDTO;
 import net.rcsoft.service.proxy.data.util.DtoUtil;
+import net.rcsoft.service.proxy.server.configuration.ServletConfigurationProvider;
 import net.rcsoft.service.proxy.server.provider.InitialContextServiceProvider;
 import net.rcsoft.service.proxy.server.provider.ServiceProvider;
 
@@ -30,32 +32,45 @@ import net.rcsoft.service.proxy.server.provider.ServiceProvider;
  */
 public class EjbServiceExecutionServlet extends HttpServlet {
     
-    private static final String JDNI_PREFIX = "jndi.prefix";
+    private static final String CONFIGURATION_PROVIDER_CLASS = "configuration.provider.class";
     
     private static final String SERVICE_PROVIDER_CLASS = "service.provider.class";
     
-    private String jndiPrefix;
-    
     private ServiceProvider serviceProvider;
+
+    private ConfigurationProvider configurationProvider;
 
     @Override
     public void init() throws ServletException {
         super.init();
         
-        this.jndiPrefix = this.getServletConfig().getInitParameter(JDNI_PREFIX);
-        this.serviceProvider = new InitialContextServiceProvider(this.jndiPrefix);
-        
-        final String providerFqn = this.getServletConfig().getInitParameter(SERVICE_PROVIDER_CLASS);
-        
-        if (providerFqn != null && !providerFqn.trim().isEmpty()) {
+        this.configurationProvider = new ServletConfigurationProvider(this.getServletConfig());
+        this.serviceProvider = new InitialContextServiceProvider();
+
+        final String configurationProviderFqn = this.getServletConfig().getInitParameter(CONFIGURATION_PROVIDER_CLASS);
+        final String serviceProviderFqn = this.getServletConfig().getInitParameter(SERVICE_PROVIDER_CLASS);
+
+        if (configurationProviderFqn != null && !configurationProviderFqn.trim().isEmpty()) {
             try {
-                Class<? extends ServiceProvider> serviceClass =  (Class<? extends ServiceProvider>) Class.forName(providerFqn);
+                Class<? extends ConfigurationProvider> serviceClass =  (Class<? extends ConfigurationProvider>) Class.forName(configurationProviderFqn);
+
+                this.configurationProvider = serviceClass.newInstance();
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                Logger.getLogger(EjbServiceExecutionServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        if (serviceProviderFqn != null && !serviceProviderFqn.trim().isEmpty()) {
+            try {
+                Class<? extends ServiceProvider> serviceClass =  (Class<? extends ServiceProvider>) Class.forName(serviceProviderFqn);
                 
                 this.serviceProvider = serviceClass.newInstance();
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                 Logger.getLogger(EjbServiceExecutionServlet.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        this.serviceProvider.setConfigurationProvider(this.configurationProvider);
     }
 
     @Override
@@ -69,7 +84,7 @@ public class EjbServiceExecutionServlet extends HttpServlet {
             final List<Class<?>> paramTypes = new ArrayList<>();
             final List<Object> paramData = new ArrayList<>();
             methodParams.stream().forEach((param) -> {
-                paramTypes.add(param.getClass());
+                paramTypes.add(param.getParamClass());
                 paramData.add(param.getParamData());
             });
             final Method method = this.getMethod(serviceInstance.getClass(), request.getMethod(), paramTypes.toArray(new Class<

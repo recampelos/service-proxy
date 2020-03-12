@@ -139,7 +139,7 @@ public class ObjectUtil {
      */
     public static String getClassNameForObject(final Object obj) {
         if (ObjectUtil.isList(obj)) {
-            return ObjectUtil.getClassNameFromCollection((List) obj);
+            return ObjectUtil.getClassNameFromCollection((Collection) obj);
         } else {
             return obj.getClass().getName();
         }

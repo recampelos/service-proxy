@@ -11,7 +11,9 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Unit test class for service proxy.
@@ -37,6 +39,20 @@ public class ServiceProxyClientTest {
                     for (int i = 0; i < args.length; i++) {
                         Assert.assertEquals(requestDTO.getParams().get(i).getIndex(), i);
                         Assert.assertEquals(requestDTO.getParams().get(i).getParamData(), new Gson().toJson(args[i]));
+
+                        if (ObjectUtil.isMap(args[i])) {
+                            final Map map = (Map) args[i];
+                            final String keyClass = ObjectUtil.getClassNameForObject(map.keySet());
+                            final String valueClass = ObjectUtil.getClassNameForObject(map.values());
+
+                            Assert.assertEquals(requestDTO.getParams().get(i).getKeyClass(), keyClass);
+                            Assert.assertEquals(requestDTO.getParams().get(i).getValueClass(), valueClass);
+                        } else {
+                            final String valueClass = ObjectUtil.getClassNameForObject(args[i]);
+
+                            Assert.assertNull(requestDTO.getParams().get(i).getKeyClass());
+                            Assert.assertEquals(requestDTO.getParams().get(i).getValueClass(), valueClass);
+                        }
                     }
                 } else {
                     Assert.assertEquals(requestDTO.getParams().size(), 0);
@@ -55,7 +71,15 @@ public class ServiceProxyClientTest {
 
         List<Data> list = new ArrayList<>();
         list.add(new Data());
-
         service.listParam(list);
+
+        Data[] array = new Data[]{};
+        service.arrayParam(array);
+        array = new Data[]{new Data()};
+        service.arrayParam(array);
+
+        Map<String, Data> map = new HashMap<>();
+        map.put("key", new Data());
+        service.mapParam(map);
     }
 }
